@@ -1,10 +1,29 @@
-# rad-claude MCP Server
 
-**Model Context Protocol server for intelligent skill activation and context management**
+
+<div align="center">
+  <img src="https://res.cloudinary.com/df23ubjbb/image/upload/v1635199620/Github/RAD_Logo.png" width="32" />
+  <h1>RAD CLAUDE MCP</h1>
+<h3>Model Context Protocol server for intelligent skill activation and context management</h3>
+  
+  <a href="https://claude.ai/">
+    <img width="32px" alt="claude" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Claude_AI_symbol.svg/1200px-Claude_AI_symbol.svg.png">
+  </a>
+  <a href="https://modelcontextprotocol.io/docs/getting-started/intro">
+    <img width="32px" alt="mcp" src="https://avatars.githubusercontent.com/u/182288589?s=48&v=4">
+  </a>
+  <a href="https://bun.com">
+    <img width="32px" alt="bun" src="https://bun.sh/logo.svg"  />
+  </a>
+  <br />
+  <br />
+
+</div>
+
 
 The rad-claude MCP server automatically discovers relevant skills, agents, and resources based on your prompts and file context, reducing token usage by 50-70% through progressive disclosure.
 
 **Compatible with:** Claude Desktop, Zed, Cursor, VS Code (Continue), and any MCP-compatible client.
+
 
 ---
 
@@ -466,19 +485,12 @@ This MCP server was built and refined through multiple phases:
 
 See `OPTIMIZATION_SUMMARY.md` for optimization lessons and best practices.
 
-## Contributing
+## Support
 
-This MCP server is part of the rad-claude methodology. For improvements:
+- **Issues**: [GitHub Issues](https://github.com/JasonDocton/rad-discord-bot/issues)
+- **Discord**: jasondocton
 
-1. Load relevant skill (e.g., `security-patterns` for security changes)
-2. Follow TypeScript patterns (strict mode, explicit types, readonly arrays)
-3. Add tests for new functionality
-4. Run `bun run typecheck` before committing
-5. Update this README if adding new features/tools
-
-## License
-
-MIT (same as rad-claude project)
+- **[Consider Sponsoring YouAreRAD](https://github.com/sponsors/youarerad)**: Just $30 helps our non-profit cover the cost of mental health care for someone in need.
 
 ---
 
@@ -486,3 +498,7 @@ MIT (same as rad-claude project)
 **Status:** Production-ready with semantic detection
 **Semantic Understanding:** ✅ Implemented (Content scoring 30% active)
 **Token Efficiency:** 27% reduction maintained
+
+<div align="center"><img src="https://res.cloudinary.com/df23ubjbb/image/upload/v1635199620/Github/RAD_Logo.png" width="32" /> </div>
+
+[⬆ Back to Top](#rad-claude)
