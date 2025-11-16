@@ -494,11 +494,6 @@ See `OPTIMIZATION_SUMMARY.md` for optimization lessons and best practices.
 
 ---
 
-**Version:** 1.0.0
-**Status:** Production-ready with semantic detection
-**Semantic Understanding:** ✅ Implemented (Content scoring 30% active)
-**Token Efficiency:** 27% reduction maintained
-
 <div align="center"><img src="https://res.cloudinary.com/df23ubjbb/image/upload/v1635199620/Github/RAD_Logo.png" width="32" /> </div>
 
 [⬆ Back to Top](#rad-claude)
