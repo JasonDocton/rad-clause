@@ -20,7 +20,7 @@
 </div>
 
 
-The #rad-claude MCP server automatically discovers relevant skills, agents, and resources based on your prompts and file context, reducing token usage by 50-70% through progressive disclosure.
+The rad-claude MCP server automatically discovers relevant skills, agents, and resources based on your prompts and file context, reducing token usage by 50-70% through progressive disclosure.
 
 **Compatible with:** Claude Desktop, Zed, Cursor, VS Code (Continue), and any MCP-compatible client.
 
@@ -558,4 +558,4 @@ See `OPTIMIZATION_SUMMARY.md` for optimization lessons and best practices.
 
 <div align="center"><img src="https://res.cloudinary.com/df23ubjbb/image/upload/v1635199620/Github/RAD_Logo.png" width="32" /> </div>
 
-[⬆ Back to Top](#rad-claude)
+[⬆ Back to Top](#RAD-CLAUDE-MCP)
