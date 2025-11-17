@@ -3,35 +3,13 @@
 import { resolve } from 'node:path'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import {
-	createContinuationBrief,
-	createContinuationBriefInputSchema,
-	createContinuationBriefOutputSchema,
-} from './tools/create-continuation-brief.ts'
-import {
-	getRelevantSkills,
-	getRelevantSkillsInputSchema,
-	getRelevantSkillsOutputSchema,
-} from './tools/get-relevant-skills.ts'
-import {
-	getSkillResources,
-	getSkillResourcesInputSchema,
-	getSkillResourcesOutputSchema,
-} from './tools/get-skill-resources.ts'
-import {
-	checkShouldCreateCheckpoint,
-	shouldCreateCheckpointOutputSchema,
-} from './tools/should-create-checkpoint.ts'
-import {
-	suggestAgent,
-	suggestAgentInputSchema,
-	suggestAgentOutputSchema,
-} from './tools/suggest-agent.ts'
-import {
-	updateSessionTracker,
-	updateSessionTrackerInputSchema,
-	updateSessionTrackerOutputSchema,
-} from './tools/update-session-tracker.ts'
+import { z } from 'zod'
+import { createContinuationBrief } from './tools/create-continuation-brief.ts'
+import { getRelevantSkills } from './tools/get-relevant-skills.ts'
+import { getSkillResources } from './tools/get-skill-resources.ts'
+import { checkShouldCreateCheckpoint } from './tools/should-create-checkpoint.ts'
+import { suggestAgent } from './tools/suggest-agent.ts'
+import { updateSessionTracker } from './tools/update-session-tracker.ts'
 
 const serverName = 'rad-claude'
 const serverVersion = '2.0.0'
@@ -165,10 +143,16 @@ async function main(): Promise<void> {
 			title: 'Match Skills to Prompt',
 			description:
 				'Analyze prompts/files, return relevant skills with confidence scores (keywords 40%, files 30%, content 30%)',
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			inputSchema: getRelevantSkillsInputSchema as any,
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			outputSchema: getRelevantSkillsOutputSchema as any,
+			inputSchema: {
+				prompt: z
+					.string()
+					.trim()
+					.min(1)
+					.max(10000)
+					.describe('Prompt to analyze'),
+				openFiles: z.array(z.string()).optional().describe('Open file paths'),
+				workingDirectory: z.string().optional().describe('Working directory'),
+			},
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -204,17 +188,20 @@ async function main(): Promise<void> {
 			}
 		}
 	)
-
 	server.registerTool(
 		'suggest_agent',
 		{
 			title: 'Recommend Specialized Agents',
 			description:
 				'Recommend rad-claude agents for complex tasks (task-spec, convex, security, plan review)',
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			inputSchema: suggestAgentInputSchema as any,
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			outputSchema: suggestAgentOutputSchema as any,
+			inputSchema: {
+				prompt: z
+					.string()
+					.trim()
+					.min(1)
+					.max(10000)
+					.describe('User prompt to analyze'),
+			},
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -256,10 +243,14 @@ async function main(): Promise<void> {
 			title: 'Discover Skill Resources',
 			description:
 				'Find resources in skill/resources/ with progressive disclosure via topic/keywords',
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			inputSchema: getSkillResourcesInputSchema as any,
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			outputSchema: getSkillResourcesOutputSchema as any,
+			inputSchema: {
+				skillName: z.string().trim().min(1).describe('Name of the skill'),
+				topic: z.string().trim().optional().describe('Topic to filter by'),
+				keywords: z
+					.array(z.string())
+					.optional()
+					.describe('Keywords to search for'),
+			},
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -305,10 +296,26 @@ async function main(): Promise<void> {
 			title: 'Record Session Progress',
 			description:
 				'Track session milestones (commits, files, work) for checkpoint recommendations',
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			inputSchema: updateSessionTrackerInputSchema as any,
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			outputSchema: updateSessionTrackerOutputSchema as any,
+			inputSchema: {
+				currentPhase: z
+					.string()
+					.optional()
+					.describe('Current phase or milestone'),
+				completedWork: z
+					.string()
+					.optional()
+					.describe('Work completed since last update'),
+				inProgress: z.string().optional().describe('Current task in progress'),
+				filesModified: z
+					.array(z.string())
+					.optional()
+					.describe('Files modified'),
+				commitMade: z
+					.boolean()
+					.optional()
+					.describe('Whether a commit was made'),
+				lastCommit: z.string().optional().describe('Last commit hash'),
+			},
 			annotations: {
 				readOnlyHint: false,
 				destructiveHint: false,
@@ -353,8 +360,6 @@ async function main(): Promise<void> {
 			title: 'Check Checkpoint Recommendation',
 			description:
 				'Check if context checkpoint needed based on session milestones (commits, files, completions)',
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			outputSchema: shouldCreateCheckpointOutputSchema as any,
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -398,10 +403,20 @@ async function main(): Promise<void> {
 			title: 'Create Continuation Brief',
 			description:
 				'Generate AI-optimized continuation brief to archive/, reset checkpoint counters',
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			inputSchema: createContinuationBriefInputSchema as any,
-			// biome-ignore lint/suspicious/noExplicitAny: MCP SDK requires any for schemas
-			outputSchema: createContinuationBriefOutputSchema as any,
+			inputSchema: {
+				reason: z.string().describe('Why saving now'),
+				contextToLoad: z
+					.array(z.string())
+					.describe('Files to load first in next session'),
+				completedWork: z.array(z.string()).describe('What was accomplished'),
+				inProgressFile: z.string().optional().describe('File being worked on'),
+				inProgressDescription: z.string().optional().describe('Current state'),
+				nextSteps: z.array(z.string()).describe('How to resume'),
+				estimatedCompletion: z
+					.string()
+					.optional()
+					.describe('Time estimate to finish'),
+			},
 			annotations: {
 				readOnlyHint: false,
 				destructiveHint: true,
@@ -439,7 +454,6 @@ async function main(): Promise<void> {
 			}
 		}
 	)
-
 	const transport = new StdioServerTransport()
 	await server.connect(transport)
 
