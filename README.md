@@ -549,7 +549,7 @@ See `OPTIMIZATION_SUMMARY.md` for optimization lessons and best practices.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/JasonDocton/rad-discord-bot/issues)
+- **Issues**: [GitHub Issues](https://github.com/JasonDocton/rad-claude/issues)
 - **Discord**: jasondocton
 
 - **[Consider Sponsoring YouAreRAD](https://github.com/sponsors/youarerad)**: Just $30 helps our non-profit cover the cost of mental health care for someone in need.
