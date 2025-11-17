@@ -8,7 +8,7 @@
  * - Exports output schema for modern MCP SDK
  */
 
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import {
 	loadSessionTracker,
@@ -76,8 +76,7 @@ export async function createContinuationBrief(
 
 	// Ensure archive directory exists
 	const archiveDir = dirname(briefPath)
-	const archiveDirFile = Bun.file(archiveDir)
-	if (!(await archiveDirFile.exists())) {
+	if (!existsSync(archiveDir)) {
 		mkdirSync(archiveDir, { recursive: true })
 	}
 

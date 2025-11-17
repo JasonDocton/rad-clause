@@ -15,28 +15,10 @@ const serverName = 'rad-claude'
 const serverVersion = '2.0.0'
 const skillsDir = resolve(import.meta.dir, '../skills')
 
-interface CompactMatch {
-	readonly skill: { readonly name: string }
-	readonly confidence: number
-	readonly details?: {
-		readonly keywordScore?: number
-		readonly fileScore?: number
-		readonly contentScore?: number
-	}
-}
-
 interface CompactRecommendation {
 	readonly agent: { readonly name: string }
 	readonly confidence: number
 	readonly matchedSignals: readonly string[]
-}
-
-interface CompactResource {
-	readonly resource: {
-		readonly fileName: string
-		readonly filePath: string
-	}
-	readonly relevance: number
 }
 
 interface CompactCheckpoint {
@@ -50,31 +32,6 @@ interface CompactCheckpoint {
 	}
 }
 
-function formatSkillMatches(
-	matches: readonly CompactMatch[],
-	total: number
-): string {
-	if (matches.length === 0) return `0/${total} skills`
-
-	const formatted = matches
-		.map((m) => {
-			const parts: string[] = []
-			if (m.details) {
-				if ((m.details.keywordScore ?? 0) > 0)
-					parts.push(`kw${m.details.keywordScore}%`)
-				if ((m.details.fileScore ?? 0) > 0)
-					parts.push(`file${m.details.fileScore}%`)
-				if ((m.details.contentScore ?? 0) > 0)
-					parts.push(`ct${m.details.contentScore}%`)
-			}
-			const match = parts.length > 0 ? ` [${parts.join(',')}]` : ''
-			return `${m.skill.name}:${m.confidence}%${match}`
-		})
-		.join('\n')
-
-	return `${matches.length}/${total}:\n${formatted}`
-}
-
 function formatAgentRecommendations(
 	recommendations: readonly CompactRecommendation[]
 ): string {
@@ -85,19 +42,6 @@ function formatAgentRecommendations(
 			(r) => `${r.agent.name}:${r.confidence}% [${r.matchedSignals.join(',')}]`
 		)
 		.join('\n')
-}
-
-function formatResourceRecommendations(
-	recommendations: readonly CompactResource[],
-	total: number
-): string {
-	if (recommendations.length === 0) return `0/${total} resources`
-
-	const formatted = recommendations
-		.map((r) => `${r.resource.fileName}:${r.relevance}% ${r.resource.filePath}`)
-		.join('\n')
-
-	return `${recommendations.length}/${total}:\n${formatted}`
 }
 
 function formatCheckpointStatus(checkpoint: CompactCheckpoint): string {
@@ -177,11 +121,26 @@ async function main(): Promise<void> {
 			}
 
 			const { matches, totalSkillsScanned } = result.value
+
+			// Read and include skill content for each match
+			const skillContents = await Promise.all(
+				matches.map(async (match) => {
+					try {
+						const skillContent = await Bun.file(match.skill.skillMdPath).text()
+						return `\n## ${match.skill.name} (${match.confidence}% match)\n${skillContent}\n`
+					} catch (_error) {
+						return `\n## ${match.skill.name} (${match.confidence}% match)\n[Error reading skill content]\n`
+					}
+				})
+			)
+
+			const fullContent = `Found ${matches.length}/${totalSkillsScanned} relevant skills:\n${skillContents.join('\n---\n')}`
+
 			return {
 				content: [
 					{
 						type: 'text' as const,
-						text: formatSkillMatches(matches, totalSkillsScanned),
+						text: fullContent,
 					},
 				],
 				structuredContent: result.value,
@@ -259,7 +218,7 @@ async function main(): Promise<void> {
 			},
 		},
 		// biome-ignore lint/suspicious/noExplicitAny: Handler params validated by Zod internally
-		(params: any) => {
+		async (params: any) => {
 			const result = getSkillResources(params, skillsDir)
 
 			if (!result.ok) {
@@ -275,14 +234,29 @@ async function main(): Promise<void> {
 			}
 
 			const { recommendations, totalResources } = result.value
+
+			// Read and include resource file content for each recommendation
+			const resourceContents = await Promise.all(
+				recommendations.map(async (rec) => {
+					try {
+						const fileContent = await Bun.file(rec.resource.filePath).text()
+						return `\n## ${rec.resource.fileName} (${rec.relevance}% relevant)\n**Topic:** ${rec.resource.topic}\n**Reasoning:** ${rec.reasoning}\n\n${fileContent}\n`
+					} catch (_error) {
+						return `\n## ${rec.resource.fileName} (${rec.relevance}% relevant)\n**Topic:** ${rec.resource.topic}\n[Error reading resource content]\n`
+					}
+				})
+			)
+
+			const fullContent =
+				recommendations.length > 0
+					? `Found ${recommendations.length}/${totalResources} relevant resources:\n${resourceContents.join('\n---\n')}`
+					: `No resources found for this skill (0/${totalResources} matched criteria)`
+
 			return {
 				content: [
 					{
 						type: 'text' as const,
-						text: formatResourceRecommendations(
-							recommendations,
-							totalResources
-						),
+						text: fullContent,
 					},
 				],
 				structuredContent: result.value,

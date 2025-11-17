@@ -7,7 +7,7 @@
  * Phase 9: Intelligent Context Management
  */
 
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Result } from '../types/schemas.ts'
 import {
@@ -81,8 +81,7 @@ export async function saveSessionTracker(
 	try {
 		// Ensure directory exists
 		const dir = dirname(statePath)
-		const dirFile = Bun.file(dir)
-		if (!(await dirFile.exists())) {
+		if (!existsSync(dir)) {
 			mkdirSync(dir, { recursive: true })
 		}
 

@@ -9,6 +9,7 @@
  * Phase 3: Security validation, path checking, graceful error handling
  */
 
+import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import yaml from 'js-yaml'
 import type { DiscoveredSkill, Result } from '../types/schemas.ts'
@@ -118,8 +119,7 @@ export async function discoverSkills(
 	const resolvedSkillsDir = resolve(skillsDir)
 
 	// Basic existence check
-	const dirFile = Bun.file(resolvedSkillsDir)
-	if (!(await dirFile.exists())) {
+	if (!existsSync(resolvedSkillsDir)) {
 		return {
 			ok: false,
 			error: new Error(`Skills directory not found: ${resolvedSkillsDir}`),
