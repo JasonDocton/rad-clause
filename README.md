@@ -406,7 +406,7 @@ rad-claude/
 - **Runtime:** Bun 1.2+ (2-5x faster than Node.js)
 - **Language:** TypeScript 5.9+ (strict mode)
 - **SDK:** @modelcontextprotocol/sdk v1.22+ (modern McpServer API)
-- **Validation:** Zod 4.1+ (runtime + compile-time)
+- **Validation:** Zod 3.1+ (runtime + compile-time)
 - **Transport:** stdio (Claude Desktop native)
 - **Architecture:** Modern MCP SDK with structured content + compact text responses
 
