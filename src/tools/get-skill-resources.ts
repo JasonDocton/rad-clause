@@ -10,7 +10,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
-import { validateIsDirectory, validatePath } from '../services/security.ts'
+
 import type { Result } from '../types/schemas.ts'
 
 /**
@@ -137,27 +137,13 @@ function calculateRelevance(
  */
 function discoverResources(
 	skillPath: string,
-	skillName: string,
-	allowedDir?: string
+	skillName: string
 ): Result<readonly ResourceFile[]> {
 	const resourcesDir = join(skillPath, 'resources')
 
 	// Check if resources directory exists
 	if (!existsSync(resourcesDir)) {
 		return { ok: true, value: [] } // No resources is OK
-	}
-
-	// Validate resources directory path (security)
-	if (allowedDir) {
-		const pathValidation = validatePath(resourcesDir, allowedDir)
-		if (!pathValidation.ok) {
-			return { ok: false, error: pathValidation.error }
-		}
-
-		const dirValidation = validateIsDirectory(pathValidation.value)
-		if (!dirValidation.ok) {
-			return { ok: false, error: dirValidation.error }
-		}
 	}
 
 	const resources: ResourceFile[] = []
@@ -182,17 +168,6 @@ function discoverResources(
 				continue
 			}
 
-			// Validate file path (security)
-			if (allowedDir) {
-				const fileValidation = validatePath(filePath, allowedDir)
-				if (!fileValidation.ok) {
-					console.warn(
-						`[Security] Skipping resource with invalid path: ${entry}`
-					)
-					continue
-				}
-			}
-
 			resources.push({
 				fileName: entry,
 				filePath,
@@ -215,13 +190,11 @@ function discoverResources(
  *
  * @param input - Skill name and optional topic/keywords
  * @param skillsDir - Path to skills/ directory
- * @param allowedDir - Allowed parent directory for security
  * @returns Resource recommendations sorted by relevance
  */
 export function getSkillResources(
 	input: unknown,
-	skillsDir: string,
-	allowedDir?: string
+	skillsDir: string
 ): Result<GetSkillResourcesOutput, Error> {
 	// Validate input
 	const validation = getSkillResourcesInputSchema.safeParse(input)
@@ -244,16 +217,8 @@ export function getSkillResources(
 		}
 	}
 
-	// Validate skill path (security)
-	if (allowedDir) {
-		const pathValidation = validatePath(skillPath, allowedDir)
-		if (!pathValidation.ok) {
-			return { ok: false, error: pathValidation.error }
-		}
-	}
-
 	// Discover resources
-	const resourcesResult = discoverResources(skillPath, skillName, allowedDir)
+	const resourcesResult = discoverResources(skillPath, skillName)
 	if (!resourcesResult.ok) {
 		return { ok: false, error: resourcesResult.error }
 	}

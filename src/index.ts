@@ -51,14 +51,12 @@ const SERVER_VERSION = '1.0.0'
 /**
  * Path to skills/ directory
  * Project structure: src/ and skills/ are siblings at root
+ *
+ * Note: MCP servers should not implement file access restrictions.
+ * The MCP client is responsible for sandboxing and permission controls.
+ * See: https://modelcontextprotocol.io/specification/draft/basic/security_best_practices
  */
 const SKILLS_DIR = resolve(import.meta.dir, '../skills')
-
-/**
- * Allowed directory for security validation
- * Restrict file access to project root only
- */
-const ALLOWED_DIR = resolve(import.meta.dir, '..')
 
 /**
  * Sanitize error messages for client responses
@@ -133,7 +131,7 @@ async function main(): Promise<void> {
 		const { name, arguments: args } = request.params
 
 		if (name === 'get_relevant_skills') {
-			const result = await getRelevantSkills(args, SKILLS_DIR, ALLOWED_DIR)
+			const result = await getRelevantSkills(args, SKILLS_DIR)
 
 			if (!result.ok) {
 				return {
@@ -225,7 +223,7 @@ async function main(): Promise<void> {
 		}
 
 		if (name === 'get_skill_resources') {
-			const result = getSkillResources(args, SKILLS_DIR, ALLOWED_DIR)
+			const result = getSkillResources(args, SKILLS_DIR)
 
 			if (!result.ok) {
 				return {
@@ -267,7 +265,7 @@ async function main(): Promise<void> {
 		}
 
 		if (name === 'update_session_tracker') {
-			const result = await updateSessionTracker(args, ALLOWED_DIR)
+			const result = await updateSessionTracker(args, process.cwd())
 
 			if (!result.ok) {
 				return {
@@ -295,7 +293,7 @@ async function main(): Promise<void> {
 		}
 
 		if (name === 'should_create_checkpoint') {
-			const result = await checkShouldCreateCheckpoint(ALLOWED_DIR)
+			const result = await checkShouldCreateCheckpoint(process.cwd())
 
 			if (!result.ok) {
 				return {
@@ -327,7 +325,7 @@ async function main(): Promise<void> {
 		}
 
 		if (name === 'create_continuation_brief') {
-			const result = await createContinuationBrief(args, ALLOWED_DIR)
+			const result = await createContinuationBrief(args, process.cwd())
 
 			if (!result.ok) {
 				return {
@@ -371,7 +369,6 @@ async function main(): Promise<void> {
 
 	console.error(`rad-claude MCP server v${SERVER_VERSION} started`)
 	console.error(`Skills directory: ${SKILLS_DIR}`)
-	console.error(`Security: Restricted to ${ALLOWED_DIR}`)
 }
 
 // Run server

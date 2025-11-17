@@ -13,12 +13,6 @@ import { join, resolve } from 'node:path'
 import yaml from 'js-yaml'
 import type { DiscoveredSkill, Result } from '../types/schemas.ts'
 import { skillFrontmatterSchema } from '../types/schemas.ts'
-import {
-	sanitizeErrorForLogging,
-	validateIsDirectory,
-	validateIsFile,
-	validatePath,
-} from './security.ts'
 
 /**
  * Regex patterns defined at top-level for performance
@@ -115,47 +109,20 @@ function extractKeywords(content: string): readonly string[] {
 /**
  * Discover all skills in the skills/ directory
  *
- * Phase 3: Added security validation and graceful error handling
- *
  * @param skillsDir - Absolute path to skills/ directory
- * @param allowedDir - Optional: Allowed parent directory (defaults to .claude/)
  * @returns Array of discovered skills with metadata
  */
 export async function discoverSkills(
-	skillsDir: string,
-	allowedDir?: string
+	skillsDir: string
 ): Promise<Result<readonly DiscoveredSkill[]>> {
 	const resolvedSkillsDir = resolve(skillsDir)
 
-	// Phase 3: Security validation - ensure skills directory is within .claude/
-	if (allowedDir) {
-		const pathValidation = validatePath(resolvedSkillsDir, allowedDir)
-		if (!pathValidation.ok) {
-			console.error(
-				`[Security] Skill directory validation failed: ${sanitizeErrorForLogging(pathValidation.error)}`
-			)
-			return {
-				ok: false,
-				error: pathValidation.error,
-			}
-		}
-
-		// Validate it's actually a directory
-		const dirValidation = validateIsDirectory(pathValidation.value)
-		if (!dirValidation.ok) {
-			return {
-				ok: false,
-				error: dirValidation.error,
-			}
-		}
-	} else {
-		// Fallback: basic existence check (backward compatibility)
-		const dirFile = Bun.file(resolvedSkillsDir)
-		if (!(await dirFile.exists())) {
-			return {
-				ok: false,
-				error: new Error(`Skills directory not found: ${resolvedSkillsDir}`),
-			}
+	// Basic existence check
+	const dirFile = Bun.file(resolvedSkillsDir)
+	if (!(await dirFile.exists())) {
+		return {
+			ok: false,
+			error: new Error(`Skills directory not found: ${resolvedSkillsDir}`),
 		}
 	}
 
@@ -179,23 +146,6 @@ export async function discoverSkills(
 		// Skip hidden directories
 		if (entry.startsWith('.')) {
 			continue
-		}
-
-		// Phase 3: Validate SKILL.md file path is safe
-		if (allowedDir) {
-			const fileValidation = validatePath(skillMdPath, allowedDir)
-			if (!fileValidation.ok) {
-				console.warn(
-					`[Security] Skipping skill with invalid path: ${entry} (${sanitizeErrorForLogging(fileValidation.error)})`
-				)
-				continue
-			}
-
-			const isFileValidation = validateIsFile(fileValidation.value)
-			if (!isFileValidation.ok) {
-				console.warn(`[Warning] Skipping non-file: ${entry}`)
-				continue
-			}
 		}
 
 		// Read and parse SKILL.md (with error handling)
@@ -248,20 +198,17 @@ export async function discoverSkills(
 /**
  * Cached skill discovery
  * Scans skills directory once on first call, returns cached results thereafter
- *
- * Phase 3: Added allowedDir parameter for security validation
  */
 let cachedSkills: readonly DiscoveredSkill[] | null = null
 
 export async function discoverSkillsCached(
-	skillsDir: string,
-	allowedDir?: string
+	skillsDir: string
 ): Promise<Result<readonly DiscoveredSkill[]>> {
 	if (cachedSkills !== null) {
 		return { ok: true, value: cachedSkills }
 	}
 
-	const result = await discoverSkills(skillsDir, allowedDir)
+	const result = await discoverSkills(skillsDir)
 	if (result.ok) {
 		cachedSkills = result.value
 	}

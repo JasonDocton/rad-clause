@@ -19,17 +19,13 @@ import {
 /**
  * get_relevant_skills tool handler
  *
- * Phase 3: Added allowedDir for security validation
- *
  * @param input - Tool input (prompt)
  * @param skillsDir - Path to skills/ directory
- * @param allowedDir - Allowed parent directory (.claude/)
  * @returns Skill matches with confidence scores
  */
 export async function getRelevantSkills(
 	input: unknown,
-	skillsDir: string,
-	allowedDir?: string
+	skillsDir: string
 ): Promise<Result<GetRelevantSkillsOutput>> {
 	// Validate input
 	const validation = getRelevantSkillsInputSchema.safeParse(input)
@@ -42,8 +38,8 @@ export async function getRelevantSkills(
 
 	const { prompt, openFiles, workingDirectory } = validation.data
 
-	// Discover skills (cached) with security validation
-	const skillsResult = await discoverSkillsCached(skillsDir, allowedDir)
+	// Discover skills (cached)
+	const skillsResult = await discoverSkillsCached(skillsDir)
 	if (!skillsResult.ok) {
 		return { ok: false, error: skillsResult.error }
 	}
