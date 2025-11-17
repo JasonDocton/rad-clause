@@ -4,8 +4,9 @@
  * Analyzes user prompts and returns relevant rad-claude skills
  * with confidence scores.
  *
- * Phase 1: Keyword-based matching with caching
- * Phase 2: File pattern matching, context awareness
+ * Version: 2.0.0
+ * - Exports output schema for modern MCP SDK
+ * - Maintains backward-compatible response format
  */
 
 import { matchPromptToSkills } from '../services/pattern-matcher.ts'
@@ -15,6 +16,10 @@ import {
 	type GetRelevantSkillsOutput,
 	getRelevantSkillsInputSchema,
 } from '../types/schemas.ts'
+
+// Re-export schemas for modern MCP SDK
+export { getRelevantSkillsOutputSchema } from '../types/output-schemas.ts'
+export { getRelevantSkillsInputSchema }
 
 /**
  * get_relevant_skills tool handler

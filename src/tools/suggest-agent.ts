@@ -4,11 +4,17 @@
  * Analyzes user prompts and recommends appropriate rad-claude agents
  * for complex tasks that benefit from specialized expertise.
  *
- * Phase 4: Agent Intelligence
+ * Version: 2.0.0
+ * - Exports output schema for modern MCP SDK
  */
 
 import { z } from 'zod'
+import type { SuggestAgentOutput } from '../types/output-schemas.ts'
 import type { Result } from '../types/schemas.ts'
+
+export type { SuggestAgentOutput } from '../types/output-schemas.ts'
+// Re-export schemas and types for modern MCP SDK
+export { suggestAgentOutputSchema } from '../types/output-schemas.ts'
 
 /**
  * Agent metadata and matching patterns
@@ -130,27 +136,6 @@ export const suggestAgentInputSchema = z.object({
 })
 
 export type SuggestAgentInput = z.infer<typeof suggestAgentInputSchema>
-
-/**
- * Output schema for suggest_agent tool
- */
-export const suggestAgentOutputSchema = z.object({
-	recommendations: z.array(
-		z.object({
-			agent: z.object({
-				name: z.string(),
-				description: z.string(),
-				whenToUse: z.string(),
-				estimatedDuration: z.string(),
-			}),
-			confidence: z.number().min(0).max(100),
-			reasoning: z.string(),
-			matchedSignals: z.array(z.string()),
-		})
-	),
-})
-
-export type SuggestAgentOutput = z.infer<typeof suggestAgentOutputSchema>
 
 /**
  * Match a prompt against an agent's patterns

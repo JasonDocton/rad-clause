@@ -4,7 +4,8 @@
  * Generates AI-optimized, hyper-compressed continuation brief for next session.
  * Format designed for LLM parsing, not human readability.
  *
- * Phase 9: Intelligent Context Management
+ * Version: 2.0.0
+ * - Exports output schema for modern MCP SDK
  */
 
 import { mkdirSync } from 'node:fs'
@@ -19,6 +20,10 @@ import {
 	createContinuationBriefInputSchema,
 	type SessionTracker,
 } from '../types/session-schemas.ts'
+
+// Re-export schemas for modern MCP SDK
+export { createContinuationBriefOutputSchema } from '../types/output-schemas.ts'
+export { createContinuationBriefInputSchema } from '../types/session-schemas.ts'
 
 /**
  * Generate AI-optimized continuation brief

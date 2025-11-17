@@ -4,7 +4,8 @@
  * Records session progress at natural milestones (commits, file changes, phase completions).
  * Updates .claude/SESSION_TRACKER.json for checkpoint recommendations.
  *
- * Phase 9: Intelligent Context Management
+ * Version: 2.0.0
+ * - Exports output schema for modern MCP SDK
  */
 
 import {
@@ -14,6 +15,10 @@ import {
 } from '../services/session-tracker.ts'
 import type { Result } from '../types/schemas.ts'
 import { updateSessionTrackerInputSchema } from '../types/session-schemas.ts'
+
+// Re-export schemas for modern MCP SDK
+export { updateSessionTrackerOutputSchema } from '../types/output-schemas.ts'
+export { updateSessionTrackerInputSchema } from '../types/session-schemas.ts'
 
 /**
  * Update session tracker with new progress

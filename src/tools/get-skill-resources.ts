@@ -4,14 +4,19 @@
  * Discovers and recommends resource files within a skill's resources/ directory.
  * Enables progressive disclosure - load only relevant resources instead of everything.
  *
- * Phase 5: Progressive Disclosure
+ * Version: 2.0.0
+ * - Exports output schema for modern MCP SDK
  */
 
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
-
+import type { GetSkillResourcesOutput } from '../types/output-schemas.ts'
 import type { Result } from '../types/schemas.ts'
+
+export type { GetSkillResourcesOutput } from '../types/output-schemas.ts'
+// Re-export schemas and types for modern MCP SDK
+export { getSkillResourcesOutputSchema } from '../types/output-schemas.ts'
 
 /**
  * Resource file metadata
@@ -44,29 +49,6 @@ export const getSkillResourcesInputSchema = z.object({
 
 export type GetSkillResourcesInput = z.infer<
 	typeof getSkillResourcesInputSchema
->
-
-/**
- * Output schema for get_skill_resources tool
- */
-export const getSkillResourcesOutputSchema = z.object({
-	recommendations: z.array(
-		z.object({
-			resource: z.object({
-				fileName: z.string(),
-				filePath: z.string(),
-				topic: z.string(),
-				skillName: z.string(),
-			}),
-			relevance: z.number().min(0).max(100),
-			reasoning: z.string(),
-		})
-	),
-	totalResources: z.number().int().nonnegative(),
-})
-
-export type GetSkillResourcesOutput = z.infer<
-	typeof getSkillResourcesOutputSchema
 >
 
 /**

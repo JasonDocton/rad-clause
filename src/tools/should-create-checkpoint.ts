@@ -4,7 +4,8 @@
  * Checks current session state and recommends if a context save checkpoint
  * should be created. Based on natural milestones (commits, files, completions).
  *
- * Phase 9: Intelligent Context Management
+ * Version: 2.0.0
+ * - Exports output schema for modern MCP SDK
  */
 
 import {
@@ -13,6 +14,9 @@ import {
 } from '../services/session-tracker.ts'
 import type { Result } from '../types/schemas.ts'
 import type { ShouldCreateCheckpointOutput } from '../types/session-schemas.ts'
+
+// Re-export output schema for modern MCP SDK
+export { shouldCreateCheckpointOutputSchema } from '../types/output-schemas.ts'
 
 /**
  * Check if checkpoint should be created
